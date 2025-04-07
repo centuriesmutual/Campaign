@@ -9,6 +9,7 @@ import {
   ArrowPathIcon,
   PaperAirplaneIcon,
   EllipsisHorizontalIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 
 interface Profile {
@@ -36,6 +37,7 @@ interface ChatContact {
   timestamp: string;
   unreadCount: number;
   status: 'available' | 'busy' | 'away' | 'offline';
+  department: string;
 }
 
 export default function ChatMeetingsPage() {
@@ -52,6 +54,7 @@ export default function ChatMeetingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [selectedChat, setSelectedChat] = useState<number | null>(null);
   const [newMessage, setNewMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Sample data for chat contacts
   const chatContacts: ChatContact[] = [
@@ -62,7 +65,8 @@ export default function ChatMeetingsPage() {
       lastMessage: "Can you review the latest campaign?",
       timestamp: "10:30 AM",
       unreadCount: 2,
-      status: 'available'
+      status: 'available',
+      department: 'Marketing'
     },
     {
       id: 2,
@@ -71,7 +75,8 @@ export default function ChatMeetingsPage() {
       lastMessage: "Meeting notes are ready",
       timestamp: "9:45 AM",
       unreadCount: 0,
-      status: 'busy'
+      status: 'busy',
+      department: 'Design'
     },
     {
       id: 3,
@@ -80,9 +85,15 @@ export default function ChatMeetingsPage() {
       lastMessage: "Updated the content calendar",
       timestamp: "Yesterday",
       unreadCount: 1,
-      status: 'away'
+      status: 'away',
+      department: 'Content'
     }
   ];
+
+  const filteredContacts = chatContacts.filter(contact =>
+    contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    contact.department.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Sample messages for selected chat
   const messages: Message[] = [
@@ -275,6 +286,31 @@ export default function ChatMeetingsPage() {
         )}
       </div>
 
+      {/* Search Section */}
+      <div className="bg-white rounded-xl shadow-sm p-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="block w-full rounded-lg border-gray-300 pl-10 pr-3 py-2 text-sm placeholder-gray-500 focus:border-indigo-500 focus:ring-indigo-500"
+              placeholder="Search coworkers by name or department..."
+            />
+          </div>
+          {searchQuery && (
+            <div className="mt-2">
+              <p className="text-sm text-gray-500">
+                {filteredContacts.length} result{filteredContacts.length !== 1 ? 's' : ''} found
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Chat Section */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-3">
@@ -284,7 +320,7 @@ export default function ChatMeetingsPage() {
               <h2 className="text-lg font-semibold text-gray-900">Messages</h2>
             </div>
             <div className="overflow-y-auto" style={{ maxHeight: '500px' }}>
-              {chatContacts.map((contact) => (
+              {filteredContacts.map((contact) => (
                 <button
                   key={contact.id}
                   onClick={() => setSelectedChat(contact.id)}
@@ -313,6 +349,7 @@ export default function ChatMeetingsPage() {
                       <p className="text-sm font-medium text-gray-900 truncate">{contact.name}</p>
                       <p className="text-xs text-gray-500">{contact.timestamp}</p>
                     </div>
+                    <p className="text-xs text-gray-500">{contact.department}</p>
                     <p className="text-sm text-gray-500 truncate">{contact.lastMessage}</p>
                   </div>
                   {contact.unreadCount > 0 && (

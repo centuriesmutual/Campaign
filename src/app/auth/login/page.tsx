@@ -13,13 +13,8 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      // TODO: Implement actual authentication logic
-      console.log('Login attempt:', formData);
-      router.push('/dashboard');
-    } catch (err) {
-      setError('Invalid credentials');
-    }
+    // Accept any credentials and redirect to dashboard
+    router.push('/dashboard');
   };
 
   return (

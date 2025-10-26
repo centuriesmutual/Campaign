@@ -80,7 +80,7 @@ export default function AccountBalancePage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Balance Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Current Balance */}
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
@@ -102,40 +102,87 @@ export default function AccountBalancePage() {
             </div>
           </div>
 
-          {/* Total Earnings */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-gray-500">Total Earnings</h3>
-              <PlusIcon className="h-6 w-6 text-green-600" />
+          {/* Earnings Graph */}
+          <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Earnings Overview</h3>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-500">Period:</span>
+                <select
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                  className="text-sm border border-gray-300 rounded-md px-3 py-1 bg-white"
+                >
+                  <option value="1d">Today</option>
+                  <option value="7d">This Week</option>
+                  <option value="30d">This Month</option>
+                  <option value="all">All Time</option>
+                </select>
+              </div>
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-2">
-              {showBalance ? formatCurrency(accountData.totalEarnings) : '••••••'}
+            
+            {/* Sample earnings data for different periods */}
+            <div className="space-y-4">
+              {selectedPeriod === '1d' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Today's Earnings</span>
+                    <span className="text-lg font-semibold text-green-600">
+                      {showBalance ? formatCurrency(1250.00) : '••••••'}
+                    </span>
+                  </div>
+                  <div className="bg-gray-200 rounded-full h-3">
+                    <div className="bg-green-500 h-3 rounded-full" style={{ width: '75%' }}></div>
+                  </div>
+                  <p className="text-xs text-gray-500">+12% from yesterday</p>
+                </div>
+              )}
+              
+              {selectedPeriod === '7d' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">This Week's Earnings</span>
+                    <span className="text-lg font-semibold text-green-600">
+                      {showBalance ? formatCurrency(8750.00) : '••••••'}
+                    </span>
+                  </div>
+                  <div className="bg-gray-200 rounded-full h-3">
+                    <div className="bg-green-500 h-3 rounded-full" style={{ width: '85%' }}></div>
+                  </div>
+                  <p className="text-xs text-gray-500">+8% from last week</p>
+                </div>
+              )}
+              
+              {selectedPeriod === '30d' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">This Month's Earnings</span>
+                    <span className="text-lg font-semibold text-green-600">
+                      {showBalance ? formatCurrency(28400.25) : '••••••'}
+                    </span>
+                  </div>
+                  <div className="bg-gray-200 rounded-full h-3">
+                    <div className="bg-green-500 h-3 rounded-full" style={{ width: '92%' }}></div>
+                  </div>
+                  <p className="text-xs text-gray-500">+15% from last month</p>
+                </div>
+              )}
+              
+              {selectedPeriod === 'all' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Total Earnings</span>
+                    <span className="text-lg font-semibold text-green-600">
+                      {showBalance ? formatCurrency(28400.25) : '••••••'}
+                    </span>
+                  </div>
+                  <div className="bg-gray-200 rounded-full h-3">
+                    <div className="bg-green-500 h-3 rounded-full" style={{ width: '100%' }}></div>
+                  </div>
+                  <p className="text-xs text-gray-500">All time earnings</p>
+                </div>
+              )}
             </div>
-            <p className="text-sm text-gray-500">All time</p>
-          </div>
-
-          {/* Total Spent */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-gray-500">Total Spent</h3>
-              <MinusIcon className="h-6 w-6 text-red-600" />
-            </div>
-            <div className="text-3xl font-bold text-gray-900 mb-2">
-              {showBalance ? formatCurrency(accountData.totalSpent) : '••••••'}
-            </div>
-            <p className="text-sm text-gray-500">All time</p>
-          </div>
-
-          {/* Pending Amount */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-medium text-gray-500">Pending</h3>
-              <ClockIcon className="h-6 w-6 text-yellow-600" />
-            </div>
-            <div className="text-3xl font-bold text-gray-900 mb-2">
-              {showBalance ? formatCurrency(accountData.pendingAmount) : '••••••'}
-            </div>
-            <p className="text-sm text-gray-500">Awaiting clearance</p>
           </div>
         </div>
 

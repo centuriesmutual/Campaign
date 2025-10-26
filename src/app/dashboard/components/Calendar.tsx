@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -8,14 +8,7 @@ import {
 } from '@heroicons/react/24/outline';
 import EventModal from './EventModal';
 import Clock from './Clock';
-
-interface Event {
-  id: number;
-  title: string;
-  time: string;
-  date: string;
-  type: 'meeting' | 'review' | 'event';
-}
+import { eventService, Event } from '../../../services/eventService';
 
 interface CalendarProps {
   events: Event[];
@@ -26,6 +19,13 @@ export default function Calendar({ events, onEventClick }: CalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [newEvent, setNewEvent] = useState({
+    title: '',
+    time: '',
+    type: 'meeting' as 'meeting' | 'review' | 'event'
+  });
+  const [isCreating, setIsCreating] = useState(false);
 
   const daysInMonth = new Date(
     currentDate.getFullYear(),
@@ -74,7 +74,44 @@ export default function Calendar({ events, onEventClick }: CalendarProps) {
   const handleDateClick = (day: number) => {
     const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     setSelectedDate(clickedDate);
-    setIsModalOpen(true);
+    setShowEventModal(true);
+  };
+
+  const handleCreateEvent = async () => {
+    if (newEvent.title.trim() && newEvent.time.trim() && selectedDate) {
+      setIsCreating(true);
+      
+      try {
+        const eventData = {
+          title: newEvent.title,
+          time: newEvent.time,
+          date: eventService.formatDateForStorage(selectedDate),
+          type: newEvent.type
+        };
+
+        const createdEvent = await eventService.createEvent(eventData);
+        
+        if (createdEvent) {
+          console.log('Event created successfully:', createdEvent);
+          
+          // Reset form and close modal
+          setNewEvent({ title: '', time: '', type: 'meeting' });
+          setShowEventModal(false);
+          setSelectedDate(null);
+          
+          // Refresh the page to show the new event
+          window.location.reload();
+        } else {
+          console.error('Failed to create event');
+          alert('Failed to create event. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error creating event:', error);
+        alert('Failed to create event. Please try again.');
+      } finally {
+        setIsCreating(false);
+      }
+    }
   };
 
   return (
@@ -157,20 +194,100 @@ export default function Calendar({ events, onEventClick }: CalendarProps) {
         })}
       </div>
 
-      {/* Event Modal */}
-      {selectedDate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-          <div className="relative w-full max-w-md bg-white rounded-lg shadow-xl">
+      {/* Event Creation Modal */}
+      {showEventModal && selectedDate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full mx-4">
             <div className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {selectedDate.toDateString()}
-              </h3>
-              <div className="mt-4 flex justify-end">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">Create Event</h3>
                 <button
-                  onClick={() => setSelectedDate(null)}
-                  className="text-sm font-medium text-gray-600 hover:text-gray-800"
+                  onClick={() => {
+                    setShowEventModal(false);
+                    setSelectedDate(null);
+                    setNewEvent({ title: '', time: '', type: 'meeting' });
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  Close
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Date
+                  </label>
+                  <div className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 text-gray-600">
+                    {selectedDate.toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Event Title
+                  </label>
+                  <input
+                    type="text"
+                    value={newEvent.title}
+                    onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+                    placeholder="Enter event title..."
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Time
+                  </label>
+                  <input
+                    type="time"
+                    value={newEvent.time}
+                    onChange={(e) => setNewEvent({ ...newEvent, time: e.target.value })}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Event Type
+                  </label>
+                  <select
+                    value={newEvent.type}
+                    onChange={(e) => setNewEvent({ ...newEvent, type: e.target.value as 'meeting' | 'review' | 'event' })}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  >
+                    <option value="meeting">Meeting</option>
+                    <option value="review">Review</option>
+                    <option value="event">Event</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowEventModal(false);
+                    setSelectedDate(null);
+                    setNewEvent({ title: '', time: '', type: 'meeting' });
+                  }}
+                  className="flex-1 bg-gray-100 text-gray-800 py-3 px-4 rounded-xl hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateEvent}
+                  disabled={!newEvent.title.trim() || !newEvent.time.trim() || isCreating}
+                  className="flex-1 bg-indigo-600 text-white py-3 px-4 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isCreating ? 'Creating...' : 'Create Event'}
                 </button>
               </div>
             </div>

@@ -3,10 +3,11 @@
 import {
   CalendarIcon,
 } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import TaskModal from './components/TaskModal';
 import Calendar from './components/Calendar';
 import TaskListModal from './components/TaskListModal';
+import { eventService, Event } from '../../services/eventService';
 
 export default function DashboardPage() {
   const [selectedTask, setSelectedTask] = useState<typeof tasks[0] | null>(null);
@@ -16,37 +17,39 @@ export default function DashboardPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<typeof upcomingEvents[0] | null>(null);
   const [isTaskListModalOpen, setIsTaskListModalOpen] = useState(false);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(true);
 
+  // Load events from API
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const loadedEvents = await eventService.getEvents();
+        setEvents(loadedEvents);
+      } catch (error) {
+        console.error('Error loading events:', error);
+      } finally {
+        setIsLoadingEvents(false);
+      }
+    };
 
+    loadEvents();
+  }, []);
+
+  // Convert API events to the format expected by the component
   const upcomingEvents: Array<{
     id: number;
     title: string;
     time: string;
     date: string;
     type: 'meeting' | 'review' | 'event';
-  }> = [
-    {
-      id: 1,
-      title: 'Team Meeting',
-      time: '2:00 PM',
-      date: 'Today',
-      type: 'meeting',
-    },
-    {
-      id: 2,
-      title: 'Content Review',
-      time: '11:00 AM',
-      date: 'Tomorrow',
-      type: 'review',
-    },
-    {
-      id: 3,
-      title: 'Campaign Launch',
-      time: '9:00 AM',
-      date: 'Apr 15',
-      type: 'event',
-    },
-  ];
+  }> = events.map(event => ({
+    id: event.id,
+    title: event.title,
+    time: event.time,
+    date: eventService.formatDateForDisplay(event.date),
+    type: event.type
+  }));
 
   const recentActivity = upcomingEvents.map(event => ({
     id: event.id,
@@ -140,7 +143,19 @@ export default function DashboardPage() {
         {/* Calendar - Will be first on mobile */}
         <div className="order-first lg:order-last">
           <div className="bg-white rounded-xl shadow-sm p-6">
-            <Calendar events={upcomingEvents} onEventClick={handleEventClick} />
+            <Calendar 
+              events={events} 
+              onEventClick={(event) => {
+                const convertedEvent = {
+                  id: event.id,
+                  title: event.title,
+                  time: event.time,
+                  date: eventService.formatDateForDisplay(event.date),
+                  type: event.type
+                };
+                handleEventClick(convertedEvent);
+              }} 
+            />
           </div>
         </div>
 

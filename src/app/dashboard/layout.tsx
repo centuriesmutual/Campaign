@@ -10,10 +10,12 @@ import {
   DocumentTextIcon,
   WalletIcon,
   ChartBarIcon,
+  ChatBubbleLeftRightIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, shortName: 'Home' },
+  { name: 'Messaging', href: '/dashboard/messaging', icon: ChatBubbleLeftRightIcon, shortName: 'Messaging' },
   { name: 'Submissions', href: '/dashboard/submit-content', icon: DocumentTextIcon, shortName: 'Submissions' },
   { name: 'Intelligence', href: '/dashboard/settings', icon: ChartBarIcon, shortName: 'Intelligence' },
 ];

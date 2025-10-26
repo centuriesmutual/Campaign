@@ -146,8 +146,6 @@ export default function HistoryPage() {
   const metrics = [
     { name: 'Total Views', value: '89,420', change: '+12.5%', trend: 'up', icon: EyeIcon },
     { name: 'Content Submissions', value: '87', change: '+8.2%', trend: 'up', icon: DocumentTextIcon },
-    { name: 'Avg Engagement', value: '91.2%', change: '+3.1%', trend: 'up', icon: StarIcon },
-    { name: 'Revenue Generated', value: '$18,400', change: '+15.7%', trend: 'up', icon: BanknotesIcon },
   ];
 
   return (
@@ -174,7 +172,7 @@ export default function HistoryPage() {
         </div>
 
         {/* Key Metrics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 gap-6 mb-8">
           {metrics.map((metric) => (
             <div key={metric.name} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">

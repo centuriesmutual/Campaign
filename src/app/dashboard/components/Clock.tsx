@@ -9,7 +9,9 @@ export default function Clock() {
   useEffect(() => {
     setMounted(true);
     const timer = setInterval(() => {
-      setTime(new Date());
+      // Get current Central Time
+      const centralTime = new Date(new Date().toLocaleString("en-US", {timeZone: "America/Chicago"}));
+      setTime(centralTime);
     }, 1000);
 
     return () => clearInterval(timer);

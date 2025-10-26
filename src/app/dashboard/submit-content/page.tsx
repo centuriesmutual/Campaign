@@ -1,10 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DocumentTextIcon,
   PhotoIcon,
-  TagIcon,
   FolderIcon,
   CalendarDaysIcon,
   CloudArrowUpIcon,
@@ -14,12 +13,20 @@ import {
 export default function SubmitContentPage() {
   const [formData, setFormData] = useState({
     title: '',
-    category: 'blog',
-    paperFileUrl: '',
-    tags: '',
+    boxFileUrl: '',
     featuredImage: null as File | null,
     publishDate: '',
   });
+
+  // Set current datetime when component mounts
+  useEffect(() => {
+    const now = new Date();
+    // Convert to Central Time (UTC-6 for CST, UTC-5 for CDT)
+    const centralTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Chicago"}));
+    // Format datetime-local input value (YYYY-MM-DDTHH:MM)
+    const formattedDateTime = centralTime.toISOString().slice(0, 16);
+    setFormData(prev => ({ ...prev, publishDate: formattedDateTime }));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,42 +40,6 @@ export default function SubmitContentPage() {
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Submit Blog Post or Article</h1>
         
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Content Type Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Content Type</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, category: 'blog' })}
-                className={`p-4 border rounded-lg flex items-center ${
-                  formData.category === 'blog'
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : 'border-gray-300'
-                }`}
-              >
-                <DocumentTextIcon className="h-6 w-6 mr-2 text-indigo-600" />
-                <div className="text-left">
-                  <div className="font-medium">Blog Post</div>
-                  <div className="text-sm text-gray-500">Informal, engaging content</div>
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormData({ ...formData, category: 'news' })}
-                className={`p-4 border rounded-lg flex items-center ${
-                  formData.category === 'news'
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : 'border-gray-300'
-                }`}
-              >
-                <FolderIcon className="h-6 w-6 mr-2 text-indigo-600" />
-                <div className="text-left">
-                  <div className="font-medium">News Article</div>
-                  <div className="text-sm text-gray-500">Formal, newsworthy content</div>
-                </div>
-              </button>
-            </div>
-          </div>
 
           {/* Title */}
           <div>
@@ -83,34 +54,18 @@ export default function SubmitContentPage() {
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
             />
-            <p className="mt-1 text-sm text-gray-500">
-              Need help with titles? Try{' '}
-              <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800">
-                ChatGPT
-              </a>
-            </p>
           </div>
 
-          {/* Dropbox Paper File */}
+          {/* Box File Integration */}
           <div>
-            <label htmlFor="paperFileUrl" className="block text-sm font-medium text-gray-700">
-              Dropbox Paper Document
+            <label htmlFor="boxFileUrl" className="block text-sm font-medium text-gray-700">
+              Box Document
             </label>
             <div className="mt-2 p-4 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
               <div className="text-center">
                 <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <div className="mt-4">
-                  <a
-                    href="https://paper.dropbox.com/doc/create"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Create New Dropbox Paper Doc
-                  </a>
-                </div>
                 <p className="mt-2 text-sm text-gray-600">
-                  Create and edit your {formData.category === 'blog' ? 'blog post' : 'news article'} in Dropbox Paper
+                  Connect to your Box account to select your article document
                 </p>
               </div>
               <div className="mt-4">
@@ -120,40 +75,21 @@ export default function SubmitContentPage() {
                   </span>
                   <input
                     type="url"
-                    id="paperFileUrl"
+                    id="boxFileUrl"
                     className="block w-full flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                    placeholder="Paste your Dropbox Paper document URL here"
-                    value={formData.paperFileUrl}
-                    onChange={(e) => setFormData({ ...formData, paperFileUrl: e.target.value })}
+                    placeholder="Paste your Box document URL here"
+                    value={formData.boxFileUrl}
+                    onChange={(e) => setFormData({ ...formData, boxFileUrl: e.target.value })}
                     required
                   />
                 </div>
                 <p className="mt-2 text-sm text-gray-500">
-                  Share your document with edit access before submitting
+                  Share your Box document with edit access before submitting
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Tags */}
-          <div>
-            <label htmlFor="tags" className="block text-sm font-medium text-gray-700">
-              Tags
-            </label>
-            <div className="mt-1 flex rounded-md shadow-sm">
-              <span className="inline-flex items-center rounded-l-md border border-r-0 border-gray-300 bg-gray-50 px-3 text-gray-500">
-                <TagIcon className="h-5 w-5" />
-              </span>
-              <input
-                type="text"
-                id="tags"
-                className="block w-full flex-1 rounded-none rounded-r-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                placeholder="Enter tags separated by commas"
-                value={formData.tags}
-                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-              />
-            </div>
-          </div>
 
           {/* Featured Image */}
           <div>
@@ -184,16 +120,6 @@ export default function SubmitContentPage() {
                 <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
               </div>
             </div>
-            <p className="mt-1 text-sm text-gray-500">
-              Need images? Try AI generation with{' '}
-              <a href="https://labs.openai.com" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800">
-                DALL-E
-              </a>
-              {' '}or{' '}
-              <a href="https://www.midjourney.com" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800">
-                Midjourney
-              </a>
-            </p>
           </div>
 
           {/* Publish Date */}

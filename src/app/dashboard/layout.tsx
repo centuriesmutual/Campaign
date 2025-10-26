@@ -1,23 +1,19 @@
 'use client';
 
+import { useState } from 'react';
+
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
   HomeIcon,
-  PencilSquareIcon,
-  ChartBarIcon,
   Cog6ToothIcon,
-  ChatBubbleLeftRightIcon,
   DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, shortName: 'Home' },
-  { name: 'Create Ad', href: '/dashboard/create-ad', icon: PencilSquareIcon, shortName: 'Create' },
-  { name: 'Performance', href: '/dashboard/performance', icon: ChartBarIcon, shortName: 'Stats' },
-  { name: 'Submit Content', href: '/dashboard/submit-content', icon: DocumentTextIcon, shortName: 'Submit' },
-  { name: 'Chat & Meetings', href: '/dashboard/chat-meetings', icon: ChatBubbleLeftRightIcon, shortName: 'Chat' },
-  { name: 'Settings', href: '/dashboard/settings', icon: Cog6ToothIcon, shortName: 'Settings' },
+  { name: 'Submissions', href: '/dashboard/submit-content', icon: DocumentTextIcon, shortName: 'Submissions' },
+  { name: 'History', href: '/dashboard/settings', icon: Cog6ToothIcon, shortName: 'History' },
 ];
 
 export default function DashboardLayout({
@@ -26,13 +22,52 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
+
+  const handleBalanceClick = () => {
+    // Redirect to account balance page
+    window.location.href = '/dashboard/account-balance';
+  };
+
+  const handleLogout = () => {
+    // Redirect to login page
+    window.location.href = '/auth/login';
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Title Section */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-bold text-gray-900 py-4">Marketing Hub</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-gray-900 py-4">Marketing Hub</h1>
+            <div className="flex items-center space-x-4">
+              <div 
+                className="bg-green-50 px-3 py-2 rounded-lg cursor-pointer hover:bg-green-100 transition-colors"
+                onClick={handleBalanceClick}
+              >
+                <span className="text-lg font-semibold text-green-700">$2,450.00</span>
+              </div>
+              <div className="relative">
+                <Cog6ToothIcon 
+                  className="h-5 w-5 text-gray-500 hover:text-gray-700 cursor-pointer" 
+                  onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
+                />
+                {showSettingsDropdown && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                    <div className="py-1">
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium"
+                      >
+                        Log Out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

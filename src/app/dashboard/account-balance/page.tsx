@@ -11,11 +11,13 @@ import {
   MinusIcon,
   EyeIcon,
   EyeSlashIcon,
+  CpuChipIcon,
 } from '@heroicons/react/24/outline';
 
 export default function AccountBalancePage() {
   const [showBalance, setShowBalance] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
+  const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
 
   // Sample account data
   const accountData = {
@@ -80,12 +82,27 @@ export default function AccountBalancePage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Balance Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
           {/* Current Balance */}
           <div className="bg-white rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-500">Current Balance</h3>
-              <BanknotesIcon className="h-6 w-6 text-indigo-600" />
+              <div className="flex items-center space-x-2">
+                <button 
+                  className="flex items-center space-x-1 text-xs text-green-600 hover:text-green-700 transition-colors"
+                  title="View detailed earnings reports and analytics"
+                >
+                  <ArrowTrendingUpIcon className="h-4 w-4" />
+                  <span>Reports</span>
+                </button>
+                <button 
+                  className="flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-700 transition-colors"
+                  title="Transfer funds to your bank account"
+                >
+                  <BanknotesIcon className="h-4 w-4" />
+                  <span>Withdraw</span>
+                </button>
+              </div>
             </div>
             <div className="text-3xl font-bold text-gray-900 mb-2">
               {showBalance ? formatCurrency(accountData.currentBalance) : '••••••'}
@@ -99,6 +116,35 @@ export default function AccountBalancePage() {
               <span className={balanceChange >= 0 ? 'text-green-600' : 'text-red-600'}>
                 {showBalance ? `${balanceChange >= 0 ? '+' : ''}${formatCurrency(balanceChange)} (${balanceChangePercent}%)` : '••••••'}
               </span>
+            </div>
+          </div>
+
+          {/* Meta Ad Credits */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-2">
+                <h3 className="text-sm font-medium text-gray-500">Meta Ad Credits</h3>
+                <button 
+                  onClick={() => setShowBuyCreditsModal(true)}
+                  className="p-1 hover:bg-gray-100 rounded-md transition-colors" 
+                  title="Buy More Credits"
+                >
+                  <PlusIcon className="h-4 w-4 text-blue-600" />
+                </button>
+              </div>
+              <div className="flex items-center">
+                <img 
+                  src="/metalogo.png" 
+                  alt="Meta Logo" 
+                  className="h-6 w-6"
+                />
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-gray-900 mb-2">
+              {showBalance ? '$0.00' : '••••••'}
+            </div>
+            <div className="flex items-center text-sm">
+              <span className="text-gray-600">Available for article promotion</span>
             </div>
           </div>
 
@@ -186,11 +232,14 @@ export default function AccountBalancePage() {
           </div>
         </div>
 
-        {/* Transaction History */}
+        {/* Intelligence */}
         <div className="bg-white rounded-xl shadow-sm">
           <div className="px-6 py-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">Transaction History</h2>
+              <div className="flex items-center space-x-2">
+                <CpuChipIcon className="h-6 w-6 text-purple-600" />
+                <h2 className="text-lg font-semibold text-gray-900">Intelligence</h2>
+              </div>
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-500">Period:</span>
                 <select
@@ -287,42 +336,82 @@ export default function AccountBalancePage() {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center mb-4">
-              <CreditCardIcon className="h-8 w-8 text-indigo-600 mr-3" />
-              <h3 className="text-lg font-semibold text-gray-900">Payment Methods</h3>
-            </div>
-            <p className="text-sm text-gray-500 mb-4">Manage your payment methods and billing information.</p>
-            <button className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors">
-              Manage Payments
-            </button>
-          </div>
+      </div>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center mb-4">
-              <ArrowTrendingUpIcon className="h-8 w-8 text-green-600 mr-3" />
-              <h3 className="text-lg font-semibold text-gray-900">Earnings Report</h3>
+      {/* Buy Meta Credits Modal */}
+      {showBuyCreditsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold text-gray-900">Buy Meta Ad Credits</h3>
+                <button
+                  onClick={() => setShowBuyCreditsModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Credit Amount
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Enter amount"
+                    step="0.01"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Articles to Promote
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Number of articles"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <CreditCardIcon className="h-5 w-5 text-blue-600" />
+                    <span className="text-sm font-medium text-blue-900">Admin Processing</span>
+                  </div>
+                  <p className="text-sm text-blue-700">
+                    Your credits will be sent to the admin who will handle the Meta Ads promotion for your articles.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => setShowBuyCreditsModal(false)}
+                  className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    // Handle purchase logic here
+                    setShowBuyCreditsModal(false);
+                    // Show success message or redirect
+                  }}
+                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Purchase Credits
+                </button>
+              </div>
             </div>
-            <p className="text-sm text-gray-500 mb-4">View detailed earnings reports and analytics.</p>
-            <button className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors">
-              View Reports
-            </button>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center mb-4">
-              <BanknotesIcon className="h-8 w-8 text-blue-600 mr-3" />
-              <h3 className="text-lg font-semibold text-gray-900">Withdraw Funds</h3>
-            </div>
-            <p className="text-sm text-gray-500 mb-4">Transfer funds to your bank account.</p>
-            <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
-              Withdraw Now
-            </button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

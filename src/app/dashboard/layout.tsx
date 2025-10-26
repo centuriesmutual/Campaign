@@ -8,12 +8,14 @@ import {
   HomeIcon,
   Cog6ToothIcon,
   DocumentTextIcon,
+  WalletIcon,
+  ChartBarIcon,
 } from '@heroicons/react/24/outline';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, shortName: 'Home' },
   { name: 'Submissions', href: '/dashboard/submit-content', icon: DocumentTextIcon, shortName: 'Submissions' },
-  { name: 'History', href: '/dashboard/settings', icon: Cog6ToothIcon, shortName: 'History' },
+  { name: 'Intelligence', href: '/dashboard/settings', icon: ChartBarIcon, shortName: 'Intelligence' },
 ];
 
 export default function DashboardLayout({
@@ -43,10 +45,11 @@ export default function DashboardLayout({
             <h1 className="text-2xl font-bold text-gray-900 py-4">Marketing Hub</h1>
             <div className="flex items-center space-x-4">
               <div 
-                className="bg-green-50 px-3 py-2 rounded-lg cursor-pointer hover:bg-green-100 transition-colors"
+                className="bg-green-50 px-3 py-2 rounded-lg cursor-pointer hover:bg-green-100 transition-colors flex items-center space-x-2"
                 onClick={handleBalanceClick}
               >
-                <span className="text-lg font-semibold text-green-700">$2,450.00</span>
+                <WalletIcon className="h-5 w-5 text-green-700" />
+                <span className="text-lg font-semibold text-green-700">Account Balance</span>
               </div>
               <div className="relative">
                 <Cog6ToothIcon 

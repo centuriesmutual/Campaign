@@ -30,7 +30,7 @@ export default function MessagingPage() {
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
 
   // Sample conversations data
-  const conversations = [
+  const conversations: Conversation[] = [
     {
       id: 1,
       name: 'Sarah Johnson',

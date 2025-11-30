@@ -11,12 +11,23 @@ import {
   PlusIcon,
 } from '@heroicons/react/24/outline';
 
+type Conversation = {
+  id: number;
+  name: string;
+  role: string;
+  lastMessage: string;
+  timestamp: string;
+  unread: number;
+  status: 'online' | 'away' | 'offline';
+  avatar: string;
+};
+
 export default function MessagingPage() {
   const [selectedConversation, setSelectedConversation] = useState(1);
   const [newMessage, setNewMessage] = useState('');
   const [showNewMessageModal, setShowNewMessageModal] = useState(false);
   const [showConversationModal, setShowConversationModal] = useState(false);
-  const [currentConversation, setCurrentConversation] = useState(null);
+  const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
 
   // Sample conversations data
   const conversations = [
@@ -126,7 +137,7 @@ export default function MessagingPage() {
     ]
   };
 
-  const handleConversationClick = (conversation) => {
+  const handleConversationClick = (conversation: Conversation) => {
     setCurrentConversation(conversation);
     setShowConversationModal(true);
   };

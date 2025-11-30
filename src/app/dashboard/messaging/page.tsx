@@ -143,7 +143,7 @@ export default function MessagingPage() {
       { id: 2, sender: 'You', content: 'That\'s excellent news! Can you share the detailed report?', timestamp: '1 day ago', isOwn: true },
       { id: 3, sender: 'David Kim', content: 'Sure, I\'ll send it over shortly.', timestamp: '23 hours ago', isOwn: false }
     ]
-  };
+  } as Record<number, Message[]>;
 
   const handleConversationClick = (conversation: Conversation) => {
     setCurrentConversation(conversation);
@@ -350,7 +350,7 @@ export default function MessagingPage() {
 
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {conversationMessages[currentConversation.id]?.map((message) => (
+              {(conversationMessages[currentConversation.id] ?? []).map((message) => (
                 <div
                   key={message.id}
                   className={`flex ${message.isOwn ? 'justify-end' : 'justify-start'}`}

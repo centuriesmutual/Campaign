@@ -1,10 +1,5 @@
-import { Circle, CircleEnvironments } from '@circle-fin/circle-sdk';
-
-// Circle API configuration
-const circle = new Circle(
-  process.env.CIRCLE_API_KEY || '', // Your Circle API key
-  CircleEnvironments.sandbox // Use CircleEnvironments.production for live environment
-);
+// Rails API service for wallet management
+// This service communicates with a Ruby on Rails backend
 
 export interface WalletBalance {
   walletId: string;
@@ -22,14 +17,15 @@ export interface EmployeeWallet {
   lastUpdated: Date;
 }
 
-export class CircleWalletService {
-  private circle: Circle;
+const getApiUrl = () => {
+  return process.env.RAILS_API_URL || process.env.NEXT_PUBLIC_RAILS_API_URL || 'http://localhost:3000/api';
+};
 
-  constructor(apiKey: string, environment: 'sandbox' | 'production' = 'sandbox') {
-    this.circle = new Circle(
-      apiKey,
-      environment === 'production' ? CircleEnvironments.production : CircleEnvironments.sandbox
-    );
+export class CircleWalletService {
+  private apiUrl: string;
+
+  constructor(apiUrl?: string) {
+    this.apiUrl = apiUrl || getApiUrl();
   }
 
   /**
@@ -37,20 +33,19 @@ export class CircleWalletService {
    */
   async getEmployeeWalletBalance(employeeId: string, walletId: string): Promise<WalletBalance | null> {
     try {
-      const response = await this.circle.wallets.getWallet(walletId);
-      
-      if (response.data && response.data.data) {
-        const wallet = response.data.data;
-        return {
-          walletId: wallet.id,
-          balance: wallet.balances?.[0]?.amount || '0',
-          currency: wallet.balances?.[0]?.currency || 'USD',
-          availableBalance: wallet.balances?.[0]?.amount || '0',
-          frozenBalance: '0' // Circle doesn't provide frozen balance directly
-        };
+      const response = await fetch(`${this.apiUrl}/employees/${employeeId}/wallets/${walletId}/balance`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch wallet balance: ${response.statusText}`);
       }
-      
-      return null;
+
+      const data = await response.json();
+      return data;
     } catch (error) {
       console.error('Error fetching wallet balance:', error);
       throw new Error('Failed to fetch wallet balance');
@@ -62,26 +57,32 @@ export class CircleWalletService {
    */
   async getEmployeeWallets(employeeId: string): Promise<EmployeeWallet[]> {
     try {
-      const response = await this.circle.wallets.listWallets();
-      
-      if (response.data && response.data.data) {
-        const wallets = response.data.data;
-        return wallets.map(wallet => ({
-          employeeId,
-          walletId: wallet.id,
-          walletAddress: wallet.address || '',
-          balance: {
-            walletId: wallet.id,
-            balance: wallet.balances?.[0]?.amount || '0',
-            currency: wallet.balances?.[0]?.currency || 'USD',
-            availableBalance: wallet.balances?.[0]?.amount || '0',
-            frozenBalance: '0'
-          },
-          lastUpdated: new Date()
-        }));
+      const response = await fetch(`${this.apiUrl}/employees/${employeeId}/wallets`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch employee wallets: ${response.statusText}`);
       }
-      
-      return [];
+
+      const data = await response.json();
+      // Transform the response to match EmployeeWallet interface
+      return data.map((wallet: any) => ({
+        employeeId: wallet.employee_id || employeeId,
+        walletId: wallet.wallet_id || wallet.id,
+        walletAddress: wallet.wallet_address || wallet.address || '',
+        balance: {
+          walletId: wallet.wallet_id || wallet.id,
+          balance: wallet.balance?.balance || wallet.balance || '0',
+          currency: wallet.balance?.currency || wallet.currency || 'USD',
+          availableBalance: wallet.balance?.available_balance || wallet.available_balance || wallet.balance || '0',
+          frozenBalance: wallet.balance?.frozen_balance || wallet.frozen_balance || '0',
+        },
+        lastUpdated: wallet.last_updated ? new Date(wallet.last_updated) : new Date(),
+      }));
     } catch (error) {
       console.error('Error fetching employee wallets:', error);
       throw new Error('Failed to fetch employee wallets');
@@ -93,29 +94,34 @@ export class CircleWalletService {
    */
   async createEmployeeWallet(employeeId: string, walletName?: string): Promise<EmployeeWallet | null> {
     try {
-      const response = await this.circle.wallets.createWallet({
-        idempotencyKey: `employee-${employeeId}-${Date.now()}`,
-        description: walletName || `Employee ${employeeId} Wallet`
+      const response = await fetch(`${this.apiUrl}/employees/${employeeId}/wallets`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: walletName || `Employee ${employeeId} Wallet`,
+        }),
       });
 
-      if (response.data && response.data.data) {
-        const wallet = response.data.data;
-        return {
-          employeeId,
-          walletId: wallet.id,
-          walletAddress: wallet.address || '',
-          balance: {
-            walletId: wallet.id,
-            balance: '0',
-            currency: 'USD',
-            availableBalance: '0',
-            frozenBalance: '0'
-          },
-          lastUpdated: new Date()
-        };
+      if (!response.ok) {
+        throw new Error(`Failed to create wallet: ${response.statusText}`);
       }
 
-      return null;
+      const wallet = await response.json();
+      return {
+        employeeId: wallet.employee_id || employeeId,
+        walletId: wallet.wallet_id || wallet.id,
+        walletAddress: wallet.wallet_address || wallet.address || '',
+        balance: {
+          walletId: wallet.wallet_id || wallet.id,
+          balance: wallet.balance?.balance || '0',
+          currency: wallet.balance?.currency || wallet.currency || 'USD',
+          availableBalance: wallet.balance?.available_balance || wallet.available_balance || '0',
+          frozenBalance: wallet.balance?.frozen_balance || wallet.frozen_balance || '0',
+        },
+        lastUpdated: new Date(),
+      };
     } catch (error) {
       console.error('Error creating employee wallet:', error);
       throw new Error('Failed to create employee wallet');
@@ -127,11 +133,19 @@ export class CircleWalletService {
    */
   async getWalletTransactions(walletId: string, limit: number = 50): Promise<any[]> {
     try {
-      const response = await this.circle.wallets.getWalletTransactions(walletId, {
-        limit: limit.toString()
+      const response = await fetch(`${this.apiUrl}/wallets/${walletId}/transactions?limit=${limit}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
-      return response.data?.data || [];
+      if (!response.ok) {
+        throw new Error(`Failed to fetch transactions: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.transactions || data || [];
     } catch (error) {
       console.error('Error fetching wallet transactions:', error);
       throw new Error('Failed to fetch wallet transactions');
@@ -151,9 +165,6 @@ export class CircleWalletService {
 }
 
 // Export singleton instance
-export const circleWalletService = new CircleWalletService(
-  process.env.CIRCLE_API_KEY || '',
-  process.env.NODE_ENV === 'production' ? 'production' : 'sandbox'
-);
+export const circleWalletService = new CircleWalletService();
 
 export default circleWalletService;

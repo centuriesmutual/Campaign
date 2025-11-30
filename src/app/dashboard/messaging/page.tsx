@@ -22,6 +22,14 @@ type Conversation = {
   avatar: string;
 };
 
+type Message = {
+  id: number;
+  sender: string;
+  content: string;
+  timestamp: string;
+  isOwn: boolean;
+};
+
 export default function MessagingPage() {
   const [selectedConversation, setSelectedConversation] = useState(1);
   const [newMessage, setNewMessage] = useState('');
@@ -113,7 +121,7 @@ export default function MessagingPage() {
   ];
 
   // Sample messages for each conversation
-  const conversationMessages = {
+  const conversationMessages: Record<number, Message[]> = {
     1: [
       { id: 1, sender: 'Sarah Johnson', content: 'Hi! I wanted to follow up on the Q2 campaign strategy we discussed.', timestamp: '10:30 AM', isOwn: false },
       { id: 2, sender: 'You', content: 'Thanks for reaching out! I\'ve reviewed the proposal and it looks great.', timestamp: '10:32 AM', isOwn: true },
